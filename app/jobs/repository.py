@@ -68,3 +68,54 @@ async def create_investigation_job(
             json.dumps(payload["sources"]),
             require_human_approval,
         )
+
+        if row:
+
+            await connection.execute(
+                """
+                INSERT INTO outbox_events (
+                    job_id,
+                    event_type,
+                    payload
+                )
+
+                VALUES (
+                    $1,
+                    'investigation.requested',
+                    $2::jsonb
+                )
+                """,
+                proposed_job_id,
+                json.dumps({
+                    "job_id": str(proposed_job_id)
+                }),
+            )
+
+            return {
+                "job_id": str(proposed_job_id),
+                "status": "pending",
+                "created": True,
+            }
+
+        existing = await connection.fetchrow(
+            """
+            SELECT id, request_hash, status
+            FROM investigation_jobs
+            WHERE tenant_id = $1
+              AND idempotency_key = $2
+            """,
+            tenant_id,
+            idempotency_key,
+        )
+
+        if existing["request_hash"] != digest:
+
+            raise IdempotencyConflict(
+                "Idempotency key reused with a different request."
+            )
+
+        return {
+            "job_id": str(existing["id"]),
+            "status": existing["status"],
+            "created": False,
+        }
