@@ -1,0 +1,9 @@
+# Environment variables (contains sensitive secrets/passways)
+.env
+.env.local
+.env.*
+
+# Python virtual environment folder
+venv/
+.venv/
+env/
