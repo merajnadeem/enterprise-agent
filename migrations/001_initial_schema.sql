@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS investigation_jobs (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT uq_investigation_idempotency
-        UNIQUE (tenant_id, idempotency_key),
+        UNIQUE (tenant_id, user_id, idempotency_key),
 
     CONSTRAINT valid_investigation_status
         CHECK (

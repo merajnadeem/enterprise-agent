@@ -52,6 +52,7 @@ async def create_investigation_job(
 
             ON CONFLICT (
                 tenant_id,
+                user_id,
                 idempotency_key
             )
             DO NOTHING
@@ -102,7 +103,8 @@ async def create_investigation_job(
             SELECT id, request_hash, status
             FROM investigation_jobs
             WHERE tenant_id = $1
-              AND idempotency_key = $2
+              AND user_id = $2
+              AND idempotency_key = $3
             """,
             tenant_id,
             idempotency_key,
